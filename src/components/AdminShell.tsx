@@ -1,0 +1,1 @@
+'use client';import AuthGate from './AuthGate';import Sidebar from './Sidebar';export default function AdminShell({children}:{children:React.ReactNode}){return <AuthGate><div className="shell"><Sidebar/><main className="main">{children}</main></div></AuthGate>}
