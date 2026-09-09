@@ -1,3 +1,24 @@
 'use client';
-import {useEffect,useState} from 'react';import {signInWithEmailAndPassword} from 'firebase/auth';import {auth} from '@/lib/firebase';import {useRouter,useSearchParams} from 'next/navigation';
-export default function Login(){const r=useRouter(),q=useSearchParams();const [email,setEmail]=useState(''),[pass,setPass]=useState(''),[err,setErr]=useState('');useEffect(()=>{if(q.get('error')==='not-admin')setErr('Akun berhasil login, tetapi belum terdaftar sebagai admin. Buat dokumen admins/{UID} di Firestore.');},[q]);return <div className="login"><div className="loginbox"><div className="eyebrow">Chord Management</div><h1 className="title">Admin Login</h1><p className="muted">Kelola lagu, band, album, dan cover dari satu tempat.</p>{err&&<div className="error">{err}</div>}<div style={{height:14}}/><form onSubmit={async e=>{e.preventDefault();setErr('');try{await signInWithEmailAndPassword(auth,email,pass);r.replace('/dashboard')}catch(x:any){setErr(x?.message?.replace('Firebase: ','')||'Login gagal')}}} className="formgrid"><div className="field full"><label>Email</label><input type="email" value={email} onChange={e=>setEmail(e.target.value)} required/></div><div className="field full"><label>Password</label><input type="password" value={pass} onChange={e=>setPass(e.target.value)} required/></div><div className="field full"><button className="btn primary" type="submit">Masuk ke Dashboard</button></div></form></div></div>}
+
+import { Suspense } from 'react';
+import LoginForm from './LoginForm';
+
+function LoginFallback() {
+  return (
+    <main className="login-page">
+      <div className="login-card">
+        <div className="eyebrow">Chord Admin</div>
+        <h1 className="title">Masuk</h1>
+        <p className="muted">Memuat halaman login...</p>
+      </div>
+    </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginFallback />}>
+      <LoginForm />
+    </Suspense>
+  );
+}
