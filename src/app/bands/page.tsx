@@ -1,2 +1,364 @@
-'use client';import {useEffect,useState} from 'react';import AdminShell from '@/components/AdminShell';import MediaUploader from '@/components/MediaUploader';import {getBands,saveEntity,removeEntity,slugify} from '@/lib/crud';import type {Band} from '@/types';
-export default function Bands(){const [items,setItems]=useState<Band[]>([]),[editing,setEditing]=useState<Band|null>(null),[search,setSearch]=useState('');const load=()=>getBands().then(setItems);useEffect(load,[]);const blank={name:'',slug:'',bio:'',photoUrl:'',logoUrl:'',genre:'',country:'',formedYear:undefined as number|undefined,website:'',instagram:''};const form=editing||blank;return <AdminShell><div className="top"><div><div className="eyebrow">Catalog</div><h1 className="title">Band</h1></div><button className="btn primary" onClick={()=>setEditing(blank)}>+ Tambah Band</button></div>{editing&&<div className="card" style={{marginBottom:18}}><h3>{editing.id?'Edit Band':'Band Baru'}</h3><div className="formgrid"><div className="field"><label>Nama</label><input value={form.name} onChange={e=>setEditing({...form,name:e.target.value,slug:form.slug||slugify(e.target.value)})}/></div><div className="field"><label>Slug</label><input value={form.slug} onChange={e=>setEditing({...form,slug:e.target.value})}/></div><div className="field full"><label>Bio</label><textarea value={form.bio||''} onChange={e=>setEditing({...form,bio:e.target.value})}/></div><div className="field"><label>Genre</label><input value={form.genre||''} onChange={e=>setEditing({...form,genre:e.target.value})}/></div><div className="field"><label>Negara</label><input value={form.country||''} onChange={e=>setEditing({...form,country:e.target.value})}/></div><MediaUploader label="Foto Band" value={form.photoUrl} onChange={v=>setEditing({...form,photoUrl:v})}/><MediaUploader label="Logo Band" value={form.logoUrl} onChange={v=>setEditing({...form,logoUrl:v})}/><div className="field"><label>Tahun terbentuk</label><input type="number" value={form.formedYear||''} onChange={e=>setEditing({...form,formedYear:e.target.value?Number(e.target.value):undefined})}/></div><div className="field"><label>Website</label><input value={form.website||''} onChange={e=>setEditing({...form,website:e.target.value})}/></div><div className="field"><label>Instagram</label><input value={form.instagram||''} onChange={e=>setEditing({...form,instagram:e.target.value})}/></div></div><div className="actions" style={{marginTop:16}}><button className="btn primary" onClick={async()=>{await saveEntity('bands',editing.id,{...editing,slug:slugify(editing.slug||editing.name)});setEditing(null);load()}}>Simpan</button><button className="btn" onClick={()=>setEditing(null)}>Batal</button></div></div>}<div className="toolbar"><input placeholder="Cari band…" value={search} onChange={e=>setSearch(e.target.value)}/></div><div className="card"><table className="table"><thead><tr><th>Band</th><th>Genre</th><th>Slug</th><th>Aksi</th></tr></thead><tbody>{items.filter(x=>x.name.toLowerCase().includes(search.toLowerCase())).map(x=><tr key={x.id}><td><div style={{display:'flex',gap:10,alignItems:'center'}}>{x.photoUrl?<img src={x.photoUrl} className="cover" alt=""/>:<div className="cover"/>}<b>{x.name}</b></div></td><td>{x.genre||'—'}</td><td className="muted">{x.slug}</td><td><div className="actions"><button className="btn" onClick={()=>setEditing(x)}>Edit</button><button className="btn danger" onClick={async()=>{if(confirm(`Hapus ${x.name}?`)){await removeEntity('bands',x.id!);load()}}}>Hapus</button></div></td></tr>)}</tbody></table></div></AdminShell>}
+'use client';
+
+import { useEffect, useState } from 'react';
+import AdminShell from '@/components/AdminShell';
+import MediaUploader from '@/components/MediaUploader';
+import {
+  getBands,
+  saveEntity,
+  removeEntity,
+  slugify,
+} from '@/lib/crud';
+import type { Band } from '@/types';
+
+export default function Bands() {
+  const [items, setItems] = useState<Band[]>([]);
+  const [editing, setEditing] = useState<Band | null>(null);
+  const [search, setSearch] = useState('');
+
+  const load = async () => {
+    const bands = await getBands();
+    setItems(bands);
+  };
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  const blank: Band = {
+    name: '',
+    slug: '',
+    bio: '',
+    photoUrl: '',
+    logoUrl: '',
+    genre: '',
+    country: '',
+    formedYear: undefined,
+    website: '',
+    instagram: '',
+  };
+
+  const form = editing || blank;
+
+  const filteredItems = items.filter((x) =>
+    x.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <AdminShell>
+      <div className="top">
+        <div>
+          <div className="eyebrow">Catalog</div>
+          <h1 className="title">Band</h1>
+        </div>
+
+        <button
+          className="btn primary"
+          onClick={() => setEditing({ ...blank })}
+        >
+          + Tambah Band
+        </button>
+      </div>
+
+      {editing && (
+        <div
+          className="card"
+          style={{ marginBottom: 18 }}
+        >
+          <h3>
+            {editing.id ? 'Edit Band' : 'Band Baru'}
+          </h3>
+
+          <div className="formgrid">
+            <div className="field">
+              <label>Nama</label>
+
+              <input
+                value={form.name}
+                onChange={(e) =>
+                  setEditing({
+                    ...form,
+                    name: e.target.value,
+                    slug:
+                      form.slug ||
+                      slugify(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div className="field">
+              <label>Slug</label>
+
+              <input
+                value={form.slug}
+                onChange={(e) =>
+                  setEditing({
+                    ...form,
+                    slug: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="field full">
+              <label>Bio</label>
+
+              <textarea
+                value={form.bio || ''}
+                onChange={(e) =>
+                  setEditing({
+                    ...form,
+                    bio: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="field">
+              <label>Genre</label>
+
+              <input
+                value={form.genre || ''}
+                onChange={(e) =>
+                  setEditing({
+                    ...form,
+                    genre: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="field">
+              <label>Negara</label>
+
+              <input
+                value={form.country || ''}
+                onChange={(e) =>
+                  setEditing({
+                    ...form,
+                    country: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <MediaUploader
+              label="Foto Band"
+              value={form.photoUrl}
+              onChange={(value) =>
+                setEditing({
+                  ...form,
+                  photoUrl: value,
+                })
+              }
+            />
+
+            <MediaUploader
+              label="Logo Band"
+              value={form.logoUrl}
+              onChange={(value) =>
+                setEditing({
+                  ...form,
+                  logoUrl: value,
+                })
+              }
+            />
+
+            <div className="field">
+              <label>Tahun terbentuk</label>
+
+              <input
+                type="number"
+                value={form.formedYear || ''}
+                onChange={(e) =>
+                  setEditing({
+                    ...form,
+                    formedYear: e.target.value
+                      ? Number(e.target.value)
+                      : undefined,
+                  })
+                }
+              />
+            </div>
+
+            <div className="field">
+              <label>Website</label>
+
+              <input
+                value={form.website || ''}
+                onChange={(e) =>
+                  setEditing({
+                    ...form,
+                    website: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="field">
+              <label>Instagram</label>
+
+              <input
+                value={form.instagram || ''}
+                onChange={(e) =>
+                  setEditing({
+                    ...form,
+                    instagram: e.target.value,
+                  })
+                }
+              />
+            </div>
+          </div>
+
+          <div
+            className="actions"
+            style={{ marginTop: 16 }}
+          >
+            <button
+              className="btn primary"
+              onClick={async () => {
+                if (!editing.name.trim()) {
+                  alert('Nama band wajib diisi.');
+                  return;
+                }
+
+                await saveEntity(
+                  'bands',
+                  editing.id,
+                  {
+                    ...editing,
+                    slug: slugify(
+                      editing.slug ||
+                        editing.name
+                    ),
+                  }
+                );
+
+                setEditing(null);
+                await load();
+              }}
+            >
+              Simpan
+            </button>
+
+            <button
+              className="btn"
+              onClick={() => setEditing(null)}
+            >
+              Batal
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="toolbar">
+        <input
+          placeholder="Cari band…"
+          value={search}
+          onChange={(e) =>
+            setSearch(e.target.value)
+          }
+        />
+      </div>
+
+      <div className="card">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Band</th>
+              <th>Genre</th>
+              <th>Slug</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {filteredItems.map((x) => (
+              <tr key={x.id}>
+                <td>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: 10,
+                      alignItems: 'center',
+                    }}
+                  >
+                    {x.photoUrl ? (
+                      <img
+                        src={x.photoUrl}
+                        className="cover"
+                        alt={x.name}
+                      />
+                    ) : (
+                      <div className="cover" />
+                    )}
+
+                    <b>{x.name}</b>
+                  </div>
+                </td>
+
+                <td>
+                  {x.genre || '—'}
+                </td>
+
+                <td className="muted">
+                  {x.slug}
+                </td>
+
+                <td>
+                  <div className="actions">
+                    <button
+                      className="btn"
+                      onClick={() =>
+                        setEditing({ ...x })
+                      }
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      className="btn danger"
+                      onClick={async () => {
+                        if (
+                          confirm(
+                            `Hapus ${x.name}?`
+                          )
+                        ) {
+                          await removeEntity(
+                            'bands',
+                            x.id!
+                          );
+
+                          await load();
+                        }
+                      }}
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+
+            {filteredItems.length === 0 && (
+              <tr>
+                <td
+                  colSpan={4}
+                  style={{
+                    textAlign: 'center',
+                    padding: 30,
+                  }}
+                >
+                  <span className="muted">
+                    Tidak ada band ditemukan.
+                  </span>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </AdminShell>
+  );
+}
